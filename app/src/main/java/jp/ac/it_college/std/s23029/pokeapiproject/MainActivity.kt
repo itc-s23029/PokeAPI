@@ -6,13 +6,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import jp.ac.it_college.std.s23029.pokeapiproject.databinding.ActivityMainBinding
 import retrofit2.Call
-import retrofit2.Response
 import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var adapter: PokemonListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,21 +27,25 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val apiService = RetrofitClient.apiService
-        val call = apiService.getPokemon("pikachu")
+        adapter = PokemonListAdapter(emptyList())
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
 
-        call.enqueue(object : Callback<Pokemon> {
-            override fun onResponse(call: Call<Pokemon>, response: Response<Pokemon>) {
+        val apiService = RetrofitClient.apiService
+        val call = apiService.getPokemonList(30, 0)
+
+        call.enqueue(object : Callback<PokemonListResponse> {
+            override fun onResponse(call: Call<PokemonListResponse>, response: Response<PokemonListResponse>) {
                 if (response.isSuccessful) {
-                    val pokemon = response.body()
-                    binding.textView.text = "Pokemon: ${pokemon?.name}, ID: ${pokemon?.id}"
-                    Log.d("MainActivity", "Pokemon: $pokemon")
+                    val pokemonList = response.body()?.results ?: emptyList()
+                    Log.d("MainActivity", "Pokemon list: $pokemonList")
+                    adapter.updateData(pokemonList)
                 } else {
                     Log.d("MainActivity", "Error: ${response.code()}")
                 }
             }
 
-            override fun onFailure(call: Call<Pokemon>, t: Throwable) {
+            override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
                 Log.d("MainActivity", "Failure: ${t.message}")
             }
         })

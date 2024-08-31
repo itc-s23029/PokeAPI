@@ -2,6 +2,7 @@ package jp.ac.it_college.std.s23029.pokeapiproject
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.SearchView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.adapter = adapter
 
         val apiService = RetrofitClient.apiService
-        val call = apiService.getPokemonList(30, 0)
+        val call = apiService.getPokemonList(100, 0)
 
         call.enqueue(object : Callback<PokemonListResponse> {
             override fun onResponse(call: Call<PokemonListResponse>, response: Response<PokemonListResponse>) {
@@ -47,6 +48,18 @@ class MainActivity : AppCompatActivity() {
 
             override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
                 Log.d("MainActivity", "Failure: ${t.message}")
+            }
+        })
+
+        val searchView = binding.searchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                adapter.filter(newText)
+                return true
             }
         })
     }

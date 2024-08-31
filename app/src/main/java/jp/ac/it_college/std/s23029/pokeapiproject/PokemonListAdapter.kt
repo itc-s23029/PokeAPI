@@ -9,6 +9,9 @@ import jp.ac.it_college.std.s23029.pokeapiproject.databinding.ItemPokemonBinding
 class PokemonListAdapter (private var pokemonList: List<PokemonResult>) :
         RecyclerView.Adapter<PokemonListAdapter.PokemonViewHolder>() {
 
+            private var filteredList: List<PokemonResult> = pokemonList
+
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -27,9 +30,18 @@ class PokemonListAdapter (private var pokemonList: List<PokemonResult>) :
 
     override fun getItemCount(): Int = pokemonList.size
 
-    fun updateData(newPokemonList: List<PokemonResult>) {
-        pokemonList = newPokemonList
-        Log.d("PokemonListAdapter", "Updated Pokemon List: $pokemonList")
+    fun updateData(newList: List<PokemonResult>) {
+        pokemonList = newList
+        filteredList = newList
+        notifyDataSetChanged()
+    }
+
+    fun filter(query: String?) {
+        filteredList = if (query.isNullOrEmpty()) {
+            pokemonList
+        } else {
+            pokemonList.filter { it.name.contains(query, ignoreCase = true) }
+        }
         notifyDataSetChanged()
     }
 
